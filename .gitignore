@@ -1,0 +1,46 @@
+# Smart Face Recognition Attendance System
+
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database (auto-generated)
+database/attendance.db
+
+# Trained models (auto-generated)
+models/
+
+# Face images (user data)
+data/faces/
+
+# Exported CSVs
+data/exports/
+
+# DNN model files (downloaded at runtime)
+assets/models/*.caffemodel
+assets/models/*.prototxt
+
+# Settings file (user-specific)
+settings.json
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Distribution
+dist/
+build/
+*.egg-info/
