@@ -1,347 +1,432 @@
-# 📸 Smart Face Recognition Attendance System
+<div align="center">
 
-A professional desktop application built with Python that uses **face recognition** to automatically mark attendance. Designed as a portfolio project demonstrating practical skills in computer vision, database management, GUI development, and software architecture.
+# Smart Face Recognition Attendance System
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-green?logo=opencv)
-![SQLite](https://img.shields.io/badge/Database-SQLite3-lightgrey?logo=sqlite)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+**A desktop AI application that automates attendance using real-time face recognition.**
 
----
-
-## 📋 Overview
-
-This application allows an authorized user to:
-
-1. **Register** students/employees with their face data (captured via webcam with consent).
-2. **Recognize** registered individuals in real-time through the webcam.
-3. **Automatically mark attendance** when a face is recognized.
-4. **Prevent duplicate** attendance entries for the same person on the same day.
-5. **View, search, and filter** attendance records.
-6. **Export** attendance data to CSV.
-7. **Visualize** attendance statistics with professional charts.
-
-> **Privacy First**: All face data is processed and stored locally. No images or biometric data are uploaded to external servers. Camera activates only after explicit user action.
+Built with Python · OpenCV · LBPH Algorithm · SQLite · CustomTkinter
 
 ---
 
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🧑 Student Registration | Form-based registration with field validation |
-| 📷 Face Capture | Multi-sample face capture (10 images) with live preview |
-| 👁️ Face Detection | Real-time face detection with bounding boxes |
-| 🧠 Face Recognition | LBPH-based recognition with configurable threshold |
-| ✅ Attendance Marking | Automatic attendance with duplicate-per-day prevention |
-| 📋 Attendance Records | Searchable, filterable table with date/student filters |
-| 📊 Statistics Dashboard | Charts: daily trend, present/absent pie, per-student bar |
-| 💾 CSV Export | Export filtered attendance data to CSV files |
-| ⚙️ Settings | Camera index, threshold, auto-attendance, detection method |
-| 🔒 Privacy Notice | Built-in consent/privacy notice |
-| 🎨 Modern Dark UI | Professional CustomTkinter interface with sidebar navigation |
+[Features](#-features) · [Architecture](#-architecture) · [Installation](#-installation) · [Usage Guide](#-usage-guide) · [Database](#-database-schema) · [Testing](#-testing) · [Privacy](#-privacy--consent)
 
 ---
 
-## 🛠️ Technology Stack
+</div>
 
-| Technology | Purpose |
-|---|---|
-| **Python 3.11+** | Core programming language |
-| **CustomTkinter** | Modern desktop GUI framework |
-| **OpenCV** | Face detection and recognition |
-| **LBPH Algorithm** | Local Binary Patterns Histograms for face matching |
-| **NumPy** | Numerical processing for image arrays |
-| **SQLite3** | Local relational database |
-| **Matplotlib** | Charts and data visualization |
-| **Pillow** | Image format conversion for GUI display |
-| **pathlib** | Cross-platform file path handling |
+## About
+
+This is a fully functional desktop application that uses **computer vision** and **face recognition** to automatically identify students and mark their attendance in real-time through a webcam feed.
+
+The system captures multiple face samples during registration, trains an LBPH (Local Binary Patterns Histograms) model, and then uses that model to recognize faces during live camera sessions. When a registered person is identified, their attendance is recorded in a local SQLite database with timestamp and confidence score.
+
+All processing happens **entirely offline** — no cloud APIs, no external uploads, no internet required.
 
 ---
 
-## 🏗️ System Architecture
+## Key Capabilities
 
 ```
-User Interface (CustomTkinter)
-        ↓
-Application Logic (Managers)
-        ↓
-┌───────┴────────┐
-│                │
-Face Detection   Face Recognition
-(OpenCV DNN/     (LBPH Algorithm)
- Haar Cascade)
-        ↓
-Attendance Manager
-        ↓
-SQLite Database
-        ↓
-Reports / Statistics / CSV Export
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   Register Students ───► Train Face Model ───► Recognize Faces  │
+│         │                      │                      │         │
+│    Capture 10 face        LBPH Algorithm         Real-time      │
+│    samples via webcam     learns facial           webcam         │
+│    with validation        patterns                matching       │
+│         │                      │                      │         │
+│         └──────────────────────┴──────────────────────┘         │
+│                                │                                │
+│                    Automatic Attendance Marking                  │
+│                    (duplicate-per-day prevention)                │
+│                                │                                │
+│                    SQLite Database + CSV Export                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
-
-Each layer has clear responsibilities and communicates through well-defined interfaces.
 
 ---
 
-## 📁 Project Structure
+## Features
+
+### Core Functionality
+
+| Module | What it does |
+|:---|:---|
+| **Student Registration** | Form-based registration with field validation. Captures 10 face images per student through the webcam for maximum recognition accuracy. |
+| **Face Detection** | Real-time face detection using Haar Cascade (default) or DNN SSD detector. Draws professional corner-indicator overlays on detected faces. |
+| **Face Recognition** | LBPH-based recognition with configurable confidence threshold. Converts distance scores to percentage for intuitive display. |
+| **Attendance Marking** | Automatic attendance recording with `UNIQUE(student_id, date)` constraint to prevent duplicate entries per day. |
+| **Records & Search** | Searchable, filterable attendance table with date and student filters. |
+| **Analytics Dashboard** | Attendance trend charts, present/absent breakdown, per-student statistics — all rendered with Matplotlib. |
+| **CSV Export** | Export filtered attendance data to timestamped CSV files. |
+| **Settings Panel** | Configure camera index, recognition threshold, detection method, auto-attendance toggle. |
+
+### Technical Highlights
+
+- **Dual detection backends** — Haar Cascade (zero-config) and DNN Caffe model (higher accuracy)
+- **Modular architecture** — Clean separation between GUI, core logic, database, and utilities
+- **Input validation** — All student fields validated before registration
+- **Error handling** — Graceful camera failure handling, database error recovery
+- **Toast notifications** — Floating auto-dismiss notifications for all user actions
+- **Privacy by design** — Consent notice, local-only storage, no external data transmission
+
+---
+
+## Architecture
+
+```mermaid
+graph TD
+    A["GUI Layer<br/>(CustomTkinter)"] --> B["Core Logic Layer"]
+    
+    B --> C["Face Detector<br/>Haar Cascade / DNN"]
+    B --> D["Face Recognizer<br/>LBPH Algorithm"]
+    B --> E["Student Manager<br/>CRUD Operations"]
+    B --> F["Attendance Manager<br/>Mark / Query / Export"]
+    
+    C --> G["OpenCV"]
+    D --> G
+    
+    E --> H["SQLite Database"]
+    F --> H
+    F --> I["CSV Export"]
+    
+    A --> J["Theme System<br/>Design Tokens"]
+    A --> K["Component Library<br/>Cards / Toasts / Badges"]
+
+    style A fill:#8B5CF6,stroke:#6D5AE6,color:#fff
+    style B fill:#3B82F6,stroke:#2563EB,color:#fff
+    style H fill:#22C55E,stroke:#16A34A,color:#fff
+    style G fill:#22D3EE,stroke:#06B6D4,color:#fff
+    style J fill:#17233A,stroke:#263554,color:#94A3B8
+    style K fill:#17233A,stroke:#263554,color:#94A3B8
+```
+
+### Design Pattern
+
+The application follows a **layered architecture** with dependency injection:
+
+```
+main.py
+  └── Creates all service instances (Database, Managers, Detectors)
+        └── Injects them into App (GUI root)
+              └── App distributes services to each Page via constructor
+```
+
+Each page receives only the services it needs. No page directly accesses another page's state.
+
+---
+
+## Technology Stack
+
+| Layer | Technology | Role |
+|:---|:---|:---|
+| **Language** | Python 3.11+ | Core runtime |
+| **GUI** | CustomTkinter | Modern dark-themed desktop framework |
+| **Vision** | OpenCV 4.8+ | Face detection, image processing, camera I/O |
+| **Recognition** | LBPH (opencv-contrib) | Local Binary Patterns Histograms face matching |
+| **Database** | SQLite3 | Embedded relational database (zero-config) |
+| **Charts** | Matplotlib | Attendance trend, donut, and bar visualizations |
+| **Images** | Pillow | Format conversion between OpenCV and Tkinter |
+| **Numerics** | NumPy | Array operations for image processing |
+
+---
+
+## Project Structure
 
 ```
 Face Recognition Attendance System/
 │
-├── main.py                     # Application entry point
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-├── PROJECT_REPORT.md           # Academic project report
-├── INTERVIEW_GUIDE.md          # Interview preparation guide
-├── .gitignore                  # Git ignore rules
+├── main.py                         ← Application entry point
+├── requirements.txt                ← Python dependencies
+├── LICENSE                         ← MIT License
+│
+├── core/                           ← Business logic (no GUI imports)
+│   ├── face_detector.py            ← Haar + DNN face detection
+│   ├── face_recognizer.py          ← LBPH train/predict/threshold
+│   ├── student_manager.py          ← Student registration + validation
+│   └── attendance_manager.py       ← Attendance CRUD + stats + export
+│
+├── gui/                            ← Presentation layer
+│   ├── theme.py                    ← Design system (colors, fonts, spacing)
+│   ├── components.py               ← Reusable widgets (cards, toasts, badges)
+│   ├── app.py                      ← Root window + sidebar navigation
+│   ├── dashboard.py                ← Analytics dashboard
+│   ├── registration.py             ← Student registration + face capture
+│   ├── recognition.py              ← Live face recognition
+│   ├── attendance_view.py          ← Attendance records table
+│   ├── statistics.py               ← Charts and analytics
+│   ├── settings.py                 ← Configuration panel
+│   └── about.py                    ← System info + privacy notice
 │
 ├── database/
-│   ├── __init__.py
-│   └── database.py             # SQLite database manager
-│
-├── core/
-│   ├── __init__.py
-│   ├── face_detector.py        # Face detection (Haar + DNN)
-│   ├── face_recognizer.py      # LBPH face recognition
-│   ├── attendance_manager.py   # Attendance logic
-│   └── student_manager.py      # Student CRUD operations
-│
-├── gui/
-│   ├── __init__.py
-│   ├── app.py                  # Main window + sidebar
-│   ├── dashboard.py            # Dashboard with stat cards
-│   ├── registration.py         # Student registration + face capture
-│   ├── recognition.py          # Live face recognition
-│   ├── attendance_view.py      # Attendance table
-│   ├── statistics.py           # Charts and analytics
-│   ├── settings.py             # Application settings
-│   └── about.py                # About + privacy notice
+│   └── database.py                 ← SQLite connection + schema + queries
 │
 ├── utils/
-│   ├── __init__.py
-│   ├── config.py               # Configuration constants
-│   ├── validators.py           # Input validation
-│   └── helpers.py              # Utility functions
+│   ├── config.py                   ← Centralized constants + settings I/O
+│   ├── validators.py               ← Input validation functions
+│   └── helpers.py                  ← Date/time, CSV, download utilities
 │
-├── tests/
-│   ├── __init__.py
+├── tests/                          ← Unit tests (pytest)
 │   ├── test_validators.py
 │   ├── test_database.py
 │   ├── test_student_manager.py
 │   ├── test_attendance_manager.py
 │   └── test_csv_export.py
 │
-├── scripts/
-│   └── create_demo_data.py     # Optional demo data generator
-│
-├── data/
-│   ├── faces/                  # Stored face images (per student)
-│   └── exports/                # CSV exports
-│
-├── models/                     # Trained LBPH model files
-└── assets/
-    └── models/                 # DNN model files (optional)
+└── scripts/
+    └── create_demo_data.py         ← Generate sample data for testing
 ```
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
-- **Python 3.11+** (download from [python.org](https://www.python.org/downloads/))
-- **Webcam** (built-in or USB)
-- **Windows 10/11** (also works on macOS/Linux)
+- Python 3.11 or higher — [Download](https://www.python.org/downloads/)
+- A webcam (built-in or USB)
+- Windows 10/11 (also works on macOS and Linux)
 
-### Setup Steps
+### Setup
 
 ```bash
-# 1. Clone or download the project
+# Clone or download the project
 cd "Face Recognition Attendance System"
 
-# 2. Create a virtual environment
+# Create and activate a virtual environment
 python -m venv venv
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS / Linux
 
-# 3. Activate the virtual environment
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-
-# 4. Install dependencies
+# Install all dependencies
 pip install -r requirements.txt
 
-# 5. Run the application
+# Launch the application
 python main.py
 ```
 
-### Windows-Specific Notes
-
-- If `opencv-contrib-python` fails to install, try:
-  ```bash
-  pip install --upgrade pip
-  pip install opencv-contrib-python
-  ```
-- If you get a `DLL not found` error, install the [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+> **Windows troubleshooting:** If `opencv-contrib-python` fails to install, run `pip install --upgrade pip` first. If you get a DLL error, install the [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
 ---
 
-## ⚙️ Configuration
+## Usage Guide
 
-All settings are configurable from the **Settings** page in the application or by editing `utils/config.py`:
+### 1. Register a Student
 
-| Setting | Default | Description |
-|---|---|---|
-| `CAMERA_INDEX` | `0` | Webcam device index |
-| `FACE_MATCH_THRESHOLD` | `85` | LBPH distance threshold (lower = stricter) |
-| `NUM_FACE_SAMPLES` | `10` | Face images captured per registration |
-| `FACE_IMAGE_SIZE` | `(200, 200)` | Standardized face image dimensions |
-
----
-
-## 📖 How to Use
-
-### Registering a Student
-
-1. Navigate to **Register** from the sidebar.
-2. Fill in student details (ID, Name, Department, Year, Email).
-3. Click **Start Camera** to open the webcam.
-4. Position your face clearly in front of the camera.
-5. Click **Capture Face** 10 times (slight head movement between captures).
-6. Click **Save Student** to register.
-
-### Marking Attendance
-
-1. Navigate to **Recognition** from the sidebar.
-2. Click **Start Camera**.
-3. Look at the camera — recognized faces are automatically marked.
-4. The result panel shows name, ID, confidence, and attendance status.
-5. Duplicate attendance for the same day is automatically prevented.
-
-### Viewing Attendance
-
-1. Navigate to **Attendance** from the sidebar.
-2. Use the search bar to find specific students.
-3. Use the date filter or click **Today** to filter by date.
-4. Click **Export CSV** to download the records.
-
-### Exporting Attendance
-
-- Click **Export CSV** on the Attendance page or Dashboard.
-- Files are saved to `data/exports/` as `attendance_YYYY-MM-DD.csv`.
-
----
-
-## 🗃️ Database Design
-
-### Students Table
-
-| Column | Type | Description |
-|---|---|---|
-| id | INTEGER | Auto-increment primary key |
-| student_id | TEXT (UNIQUE) | User-defined student identifier |
-| name | TEXT | Full name |
-| department | TEXT | Department/course |
-| year | INTEGER | Year of study |
-| email | TEXT | Email address |
-| phone | TEXT | Phone number (optional) |
-| face_image_path | TEXT | Path to stored face images |
-| created_at | TEXT | Registration timestamp |
-
-### Attendance Table
-
-| Column | Type | Description |
-|---|---|---|
-| id | INTEGER | Auto-increment primary key |
-| student_id | TEXT (FK) | References students.student_id |
-| date | TEXT | Date (YYYY-MM-DD) |
-| time | TEXT | Time (HH:MM:SS) |
-| status | TEXT | "Present" |
-| confidence | REAL | LBPH distance score |
-
-**Constraint**: `UNIQUE(student_id, date)` prevents duplicate daily entries.
-
----
-
-## 🧠 Face Recognition Workflow
+Navigate to **Register** from the sidebar.
 
 ```
-Registration:
-  Capture Face → Convert to Grayscale → Resize to 200×200 →
-  Store in data/faces/{student_id}/ → Retrain LBPH Model
-
-Recognition:
-  Capture Frame → Detect Face (Haar/DNN) → Extract Face ROI →
-  Grayscale → Resize to 200×200 → LBPH predict() →
-  If distance < threshold → Match → Mark Attendance
-  If distance ≥ threshold → "Unknown Person"
+Fill in student details          Start the webcam
+        │                              │
+        ▼                              ▼
+┌──────────────┐            ┌──────────────────┐
+│ Student ID   │            │  Live camera      │
+│ Full Name    │            │  preview with     │
+│ Department   │            │  face detection   │
+│ Year         │            │  overlay          │
+│ Email        │            │                   │
+│ Phone        │            │  [Capture Face]   │
+└──────────────┘            └──────────────────┘
+                                    │
+                            Capture 10 samples
+                            (vary head angle slightly)
+                                    │
+                            Click [Register Student]
 ```
 
----
+### 2. Mark Attendance
 
-## ⚠️ Limitations
+Navigate to **Recognition** from the sidebar.
 
-- **LBPH accuracy**: Works best in consistent lighting. Not as accurate as deep-learning models (but simpler to install and understand).
-- **Single camera**: Only one webcam at a time.
-- **Frontal faces**: Best with frontal face views (profile/angled faces may not be detected).
-- **No encryption**: Face images are stored as plain JPEG files (suitable for a portfolio project, not production).
+```
+Click [Start Camera]
+        │
+        ▼
+   Camera feed with face detection
+        │
+        ▼
+   Face matched? ──Yes──► Attendance recorded automatically
+        │                         │
+        No                        ▼
+        │                  ┌─────────────────┐
+        ▼                  │ Name: Rahul S.  │
+   "Unknown" label         │ ID: CSE-2024-01 │
+                           │ Confidence: 94% │
+                           │ Status: Present │
+                           └─────────────────┘
+```
 
----
+The system prevents duplicate attendance entries for the same student on the same day.
 
-## 🔒 Privacy Considerations
+### 3. View & Export Records
 
-- All face data is processed and stored **locally on this device**.
-- No images or biometric data are uploaded to external servers.
-- Camera activates **only** when the user explicitly clicks "Start Camera".
-- This is an **educational/portfolio project** — not intended for covert surveillance.
-- Obtain appropriate consent before registering or recognizing individuals.
-
----
-
-## 🔮 Future Improvements
-
-- [ ] Deep learning face recognition (FaceNet, ArcFace) for higher accuracy
-- [ ] Multi-camera support
-- [ ] Face anti-spoofing (liveness detection)
-- [ ] Email notifications for attendance reports
-- [ ] Admin authentication/login
-- [ ] Cloud backup (opt-in, encrypted)
-- [ ] Mobile companion app
-- [ ] Batch registration from photos
-- [ ] Face data encryption at rest
+Navigate to **Attendance** → search by name/ID, filter by date → click **Export CSV**.
 
 ---
 
-## 🔧 Troubleshooting
+## Face Recognition Workflow
 
-| Problem | Solution |
-|---|---|
-| `ModuleNotFoundError: cv2` | Run `pip install opencv-contrib-python` |
-| Camera not opening | Try changing Camera Index in Settings (0, 1, 2...) |
-| "No face detected" | Ensure good lighting and face the camera directly |
-| Low recognition accuracy | Capture more face samples, adjust threshold in Settings |
-| `DLL load failed` (Windows) | Install [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) |
-| Database locked | Close other instances of the application |
+```mermaid
+flowchart LR
+    subgraph Registration
+        A["Capture Face<br/>via Webcam"] --> B["Convert to<br/>Grayscale"]
+        B --> C["Resize to<br/>200 × 200 px"]
+        C --> D["Store in<br/>data/faces/"]
+        D --> E["Train LBPH<br/>Model"]
+    end
+
+    subgraph Recognition
+        F["Capture<br/>Frame"] --> G["Detect Face<br/>Haar / DNN"]
+        G --> H["Extract &<br/>Preprocess"]
+        H --> I["LBPH<br/>predict()"]
+        I --> J{"Distance<br/>< threshold?"}
+        J -- Yes --> K["Mark<br/>Attendance"]
+        J -- No --> L["Unknown<br/>Person"]
+    end
+
+    style E fill:#8B5CF6,stroke:#6D5AE6,color:#fff
+    style K fill:#22C55E,stroke:#16A34A,color:#fff
+    style L fill:#EF4444,stroke:#DC2626,color:#fff
+```
+
+### How LBPH Works
+
+LBPH (Local Binary Patterns Histograms) is a texture-based face recognition algorithm:
+
+1. **Divide** the face image into small cells (e.g., 8×8 pixels)
+2. **Compare** each pixel to its neighbors — encode as a binary pattern
+3. **Build** a histogram of these patterns for each cell
+4. **Concatenate** all histograms into a single feature vector
+5. **Compare** feature vectors using chi-square distance
+
+A **lower distance** means a better match. The default threshold is `85.0`.
 
 ---
 
-## 🧪 Running Tests
+## Database Schema
+
+```mermaid
+erDiagram
+    STUDENTS {
+        INTEGER id PK "Auto-increment"
+        TEXT student_id UK "User-defined ID"
+        TEXT name "Full name"
+        TEXT department "Department"
+        INTEGER year "Year of study"
+        TEXT email "Email address"
+        TEXT phone "Optional"
+        TEXT face_image_path "Path to face images"
+        TEXT created_at "Registration timestamp"
+    }
+    
+    ATTENDANCE {
+        INTEGER id PK "Auto-increment"
+        TEXT student_id FK "References students"
+        TEXT date "YYYY-MM-DD"
+        TEXT time "HH:MM:SS"
+        TEXT status "Present"
+        REAL confidence "LBPH distance score"
+    }
+    
+    STUDENTS ||--o{ ATTENDANCE : "has many"
+```
+
+**Key constraint:** `UNIQUE(student_id, date)` on the attendance table prevents duplicate entries per student per day.
+
+---
+
+## Configuration
+
+All settings can be adjusted from the in-app **Settings** page or by editing `utils/config.py`:
+
+| Parameter | Default | Description |
+|:---|:---:|:---|
+| `CAMERA_INDEX` | `0` | Webcam device index (try 0, 1, 2...) |
+| `FACE_MATCH_THRESHOLD` | `85.0` | LBPH distance threshold — lower = stricter matching |
+| `NUM_FACE_SAMPLES` | `10` | Number of face images captured during registration |
+| `FACE_IMAGE_SIZE` | `200×200` | All face images are resized to this before processing |
+| `FACE_DETECTION_CONFIDENCE` | `0.5` | Minimum confidence for DNN face detector |
+
+---
+
+## Testing
+
+The project includes a comprehensive test suite using `pytest`:
 
 ```bash
-cd "Face Recognition Attendance System"
 python -m pytest tests/ -v
 ```
 
+| Test Module | Coverage |
+|:---|:---|
+| `test_validators.py` | Input validation (name, email, phone, student ID) |
+| `test_database.py` | Database creation, CRUD operations, constraints |
+| `test_student_manager.py` | Student registration, duplicate prevention |
+| `test_attendance_manager.py` | Attendance marking, daily stats, duplicate prevention |
+| `test_csv_export.py` | CSV export formatting and file creation |
+
 ---
 
-## 📄 License
+## Limitations
+
+| Limitation | Explanation |
+|:---|:---|
+| **Lighting sensitivity** | LBPH works best in consistent lighting conditions. Performance degrades in very dark or backlit environments. |
+| **Frontal faces only** | Detection is optimized for frontal face views. Profile or heavily angled faces may not be detected. |
+| **Single camera** | The application supports one webcam at a time. |
+| **No encryption** | Face images are stored as plain files. Suitable for a college project, not for production deployment. |
+| **Not anti-spoof** | No liveness detection — a printed photo could potentially be recognized. |
+
+---
+
+## Future Improvements
+
+- Deep learning face recognition (FaceNet / ArcFace) for higher accuracy
+- Face anti-spoofing with liveness detection
+- Multi-camera support
+- Admin authentication and role-based access
+- Face data encryption at rest
+- Email/SMS notifications for attendance reports
+- Batch registration from existing photos
+- Cloud backup (opt-in, encrypted)
+
+---
+
+## Privacy & Consent
+
+> This application is designed for **authorized attendance use only**.
+>
+> - All face data is processed and stored **locally on this device**
+> - No images or biometric data are uploaded to external servers
+> - The camera activates **only** when the user explicitly clicks "Start Camera"
+> - Appropriate consent must be obtained before registering or recognizing individuals
+>
+> This is an **educational project** demonstrating face recognition technology. It is not intended for covert surveillance or unauthorized monitoring.
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|:---|:---|
+| `ModuleNotFoundError: cv2` | Run `pip install opencv-contrib-python` |
+| Camera not opening | Change Camera Index in Settings (try 0, 1, 2) |
+| "No face detected" | Ensure good lighting and face the camera directly |
+| Low recognition accuracy | Capture more samples, lower the threshold in Settings |
+| `DLL load failed` (Windows) | Install [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) |
+| Database locked error | Close other instances of the application |
+
+---
+
+## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## 👨‍💻 Author
+<div align="center">
 
-*Replace with your name and contact information.*
+Built with Python, OpenCV, and open-source technologies.
 
----
-
-*Built with ❤️ using Python, OpenCV, and open-source technologies.*
+</div>
